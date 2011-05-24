@@ -1,0 +1,431 @@
+<apex:page controller="ChatController" action="{!init}" showHeader="false">   
+  
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUIDark,'development-bundle/themes/ui-darkness/jquery.ui.all.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.JGrowlMod,'jquery.jgrowl.css')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.JQScrollPaneCSS)}"/>
+  
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-1.3.2.min.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-ui-1.7.2.custom.min.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.JGrowlMod,'jquery.jgrowl.js')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQInfiniteScroll,'infinite-scroll/jquery.infinitescroll.min.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.JQCKEditor04,'jquery.CKEditor.pack.js')}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQScrollTo142)}" />
+  <!--<apex:includeScript value="{!URLFOR($Resource.JQScrollPane)}" />
+  <apex:includeScript value="{!URLFOR($Resource.JQMouseWheel)}" />
+   <apex:includeScript value="{!URLFOR($Resource.JQEm)}" /> -->
+
+<link href='http://fonts.googleapis.com/css?family=Droid+Sans' rel='stylesheet' type='text/css'/>
+
+  <style type="text/css">
+  
+  body { background: black }
+  * { margin: 0; padding: 0; }
+	#container { font: 14px/1.4 Georgia, Serif; color: white; position: relative; top: -690px; z-index: 1; width: 100%; }
+	#bg { width: 100%; height: 700px; margin-top: 3px; }
+    <!--[if IE 6]>
+    <style type="text/css">
+    #bg { z-index: -1; }
+    </style>
+    <![endif]-->
+
+#page-wrap { margin: 0 auto; width: 600px; position: relative; }
+
+//#header h1 a { display: block; width: 173px; height: 79px; no-repeat; text-indent: -9999px; }
+
+#header { margin-bottom: 15px; }
+h1,h2,h3 { margin: 0 0 20px 0; font-weight: normal; font-family: 'Droid Sans', serif; }
+h1 { font-size: 36px; }
+h2 { font-size: 30px }
+h3 { font-size: 24px }
+a:focus { outline: 0; }
+
+.CRmessage { margin: 15px 0; padding: 10px; -moz-border-radius: 20px; -webkit-border-radius: 20px; font-size: 15px; }
+.warning { background: #ffd5d5; border: 3px solid #ff3939; color: #ff3939; }
+.success { background: #e5ffdb; border: 3px solid #0dba32; color: #0dba32; }
+
+label { font-size: 20px; } 
+
+#section { background: rgba(0,0,0,0.2); padding: 20px; }
+#userid { font-size: 20px; padding:8px 10px; width: 330px; }
+
+#you { position: absolute; top: 5px; right: 0; font-size: 20px; background: rgba(0,0,0,0.2); padding: 5px 10px; }
+#you span { font: italic 12px Georgia, Serif; }
+
+#rooms {  }
+#rooms ul { list-style: none; }
+#rooms ul li { margin: 0 0 5px 0; }
+#rooms li a { background: rgba(0,0,0,0.2); padding: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; display: block; position: relative; }
+#rooms li a:hover { background: none; -moz-box-shadow: 0 0 5px black; -webkit-box-shadow: 0 0 5px black; }
+#rooms li a span { position: absolute; top: 3px; right: 10px; }
+#rooms li a span strong { color: white; font-size: 20px; }
+#rooms a { text-decoration: none; color: #4fb90f; font: 18px;}
+#register .label { color: white; font: bold 12px "Lucida Grande", Sans-Serif; }   
+
+#name-area { top: 12px; right: 0; color: white; font: bold 12px "Lucida Grande", Sans-Serif; text-align: right; }   
+#name-area span { color: #fa9f00; }
+
+#send-message-area p { float: left; color: white; padding-top: 27px; font-size: 14px; }
+
+#sendie { width: 360px; padding: 10px; margin: 5px 0 0 0; font: 12px "Lucida Grande", Sans-Serif; }
+
+#userlist { float: right; width: 160px; height: 410px; overflow-y: scroll; }
+#userlist ul { color: #fff; font-size: 18px; list-style: none; }
+#userlist ul li { }
+#userlist ul li.head { border-bottom: 1px solid #eee; }
+
+#chat-wrap { border: 1px solid #eee; width: 380px; float:left; }  
+#end { height:1px; background:white; }
+#chat-area { height: 300px; overflow: auto; padding: 20px; background: white; color: #333; }
+#chat-area span.handle { color: white; background: #555; padding: 4px 8px; -moz-border-radius: 5px; -webkit-border-radius: 8px; margin: 0 5px 0 0; }
+#chat-area p { padding: 8px 0; border-bottom: 1px solid #ccc; }
+#chat-area p.loading { border-bottom: none; }
+#chat-area .posttime { font-size: 70%; color: #333; float:right; margin-bottom:12px; }
+#chat-area .mergedFeed { padding-left:25px; margin-bottom:5px; color: #333; font-size: 80%; }
+#chat-area .new { display:none }
+#chat-area .system { padding: 8px 2px; margin: 4px 0 4px 0; }
+#chat-area .system p { font-size: 90%; font-family: 'Droid Sans', serif; background: #CFF0FC; padding: 5px; border-bottom: none; }
+
+#chat-area .comments { margin-top:5px; margin-bottom:5px; }
+.sendie { width: 360px; padding: 10px; margin: 5px 0 0 0; font: 12px "Lucida Grande", Sans-Serif; }
+    
+    </style>
+
+    <img src="{!URLFOR($Resource.ChatBackground)}" alt="background image" id="bg" />
+     <script type="text/javascript">   
+			var registered = false;
+    </script>
+
+                    <apex:outputPanel rendered="{!NOT(userVerified)}">
+                         <script type="text/javascript">   
+                                function regLoad()
+                                {
+
+
+                                }
+                           </script>
+                    </apex:outputPanel>
+                    
+                   <apex:outputPanel rendered="{!userVerified}">
+                          <script type="text/javascript">       
+                            function regLoad()
+                            {
+                                  $('#register').dialog('close');
+                                  registered = true;
+                            }
+                           </script>
+                    </apex:outputPanel>
+
+
+
+                    <script type="text/javascript">
+                    
+           function checkReg()
+           {    
+               if($('#userVerified').text() == 'true')
+               {
+                    $('#register').dialog('close');
+                    registered = true;
+               }
+           }
+                            
+                            
+              // In case you don't have firebug...
+            if (!window.console || !console.firebug) {
+                var names = ["log", "debug", "info", "warn", "error", "assert", "dir", "dirxml", "group", "groupEnd", "time", "timeEnd", "count", "trace", "profile", "profileEnd"];
+                window.console = {};
+                for (var i = 0; i < names.length; ++i) window.console[names[i]] = function() {};
+            }
+
+           (function($){
+                  
+            $(document).ready(function(){
+            
+                                 //$('.sendie').ckeditor({path: '{!URLFOR($Resource.JQCKEditor04)}', toolbar: 'Basic', 
+                                 //    height: 100, width:100 });
+
+                                 $("#addPost").dialog({
+                                    autoOpen: false,
+                                    modal: true,
+                                    closeable: false,
+                                    resizable: false,
+                                    width: 600
+                                });
+                                
+                               $("#register").dialog({
+                                    autoOpen: true,
+                                    modal: true,
+                                    closeable: false,
+                                    resizable: false,
+                                    width: 600
+                                });
+                                
+                                regLoad();
+                                
+                                $("#feedMerger").dialog({
+                                    autoOpen: false,
+                                    modal: true,
+                                    closeable: false,
+                                    resizable: false,
+                                    width: 600
+                                });
+
+
+                            var $chatArea = $('#chat-area');
+                            $chatArea.html($('#newPosts').html());
+                            $newPosts = $('#newPosts');
+                            $newPosts.html('');
+                            $chatArea.children('.new').fadeIn().removeClass('new');
+                            $chatArea.scrollTo($('#end'),1800);
+                            //$chatArea.jScrollPane({ scrollbarMargin: 0, scrollbarWidth: 10  });
+
+                        $.jGrowl.defaults.pool = 5;
+                    
+                        var i = 1;
+                        var y = 1;
+                        var lastMessage = "";
+                        var newElScroll;
+        
+                        setInterval( function() {
+
+                            if(registered) 
+                            {
+	                            updateAll();
+	                            
+	                            //$chatArea.delay(600);
+	                            
+	                            //var newPostCount = $('#newPosts .new').size();
+	                            
+	                            $chatArea.append($('#newPosts').html());
+	
+	
+	                           // $chatArea.jScrollPane({ scrollbarMargin: 0, scrollbarWidth: 10  });
+	                            
+	                            newElScroll = '+=' + ($chatArea.children('.new').length * 50);
+	                            
+	                            $chatArea.children('.new').fadeIn().removeClass('new');
+	                            
+	                            $chatArea.scrollTo(newElScroll,600);
+	                         }
+
+                            if ( i < 25 ) {
+                            
+
+                                var nm = $('.notificationMessage').filter(':first').text();
+                                if (nm != lastMessage)
+                                {
+                                $.jGrowl(nm, {
+                                    sticky:         (i % 3 == 0) ? true : false,
+                                    life:           12000,
+                                    log:            function() {
+                                        console.log("Creating message " + i + "...");
+                                    },
+                                    beforeOpen:     function() {
+                                        console.log("Rendering message " + y + "...");
+                                        y++;
+                                    }
+                                });
+                                lastMessage = nm;
+                                }
+                            }
+            
+                            i++;
+                        } , 3400 );
+        
+                    });
+                })(jQuery);
+
+        
+                      </script>
+<div id="container">
+
+    <div id="page-wrap"> 
+    
+        <div id="header">
+        
+
+            <div id="you"><apex:outputtext value="Room: {!session.name}" styleclass="title block" /></div>
+            <p>&nbsp;</p>
+        </div>
+
+        <div id="section">
+
+            <div id="chat-wrap">
+
+                <div id="chat-area">
+
+                    <p align="center" style="loading"><BR/><BR/>Loading<BR/><BR/>
+                   <apex:image value="{!$Resource.Loader}" /></p>
+                </div>
+                  <div id="end">&nbsp;</div>
+            </div>
+          <apex:outputpanel id="recordsection" > 
+            <div id="userlist">
+                <ul>
+                    <li class="head">Users</li>
+                        
+                          <apex:repeat value="{!chatUsers}" var="cu" rows="50">
+                          
+                                    <li>{!IF(cu.name == activeUserHandle,'*',' ')}<apex:outputtext value="{!cu.name}" /></li>
+
+                          </apex:repeat>
+                 </ul>
+            </div>
+                                    <div id="userVerified" style="display:none">{!userVerified}</div>
+                          <apex:repeat value="{!notificationMessages}" var="nm" >
+                                   <div class="notificationMessage" style="display:none" >{!nm}</div>
+                          </apex:repeat>
+        
+                          <div id="privatemessages" style="display:none">
+                              <div class="sectionheader">Private Messages<BR/><BR/></div>
+                                <apex:repeat value="{!privateMessages}" var="nm" >
+                                       <div class="notificationMessage" style="display:none" >{!nm}</div>
+                              </apex:repeat>
+                          </div>
+                          <div id="newPosts" style="display:none">
+                               <apex:repeat value="{!chatPosts}" var="cp">
+                                            <div class="post{!IF(cp.newPost,' new','')}{!IF(cp.systemMessage,' system','')}" var="cp">
+                                            
+                                                <apex:outputPanel rendered="{!NOT(cp.systemMessage)}">
+                                                    <span class="posttime">Posted at&nbsp;{!cp.createdDate}</span>
+                                                    <span class="handle"> <apex:outputtext value="{!cp.userHandle}" /></span>
+                                                </apex:outputPanel>
+                
+                                                 <p>{!cp.postBody}&nbsp;&nbsp;</p>
+                                                 <apex:outputPanel rendered="{!cp.hasComments}">
+                                                    <span class="comments">
+                                                         <apex:repeat value="{!cp.comments}" var="c" >
+                                                             <div class="mergedFeed">
+                                                                {!c.CreatedBy.FirstName}&nbsp;{!c.CreatedBy.LastName}: {!c.CommentBody}  
+                                                             </div>
+                                                         </apex:repeat>
+                                                     </span>
+                                                 </apex:outputPanel>
+                                            </div>
+                                  </apex:repeat>
+
+                          </div>     
+           </apex:outputpanel>
+           <apex:outputpanel id="send-message-area">
+                <div id="send-message-area">
+
+                        <p>Your message: </p>
+                        <apex:form >
+                                <apex:inputTextArea value="{!postBody}" styleclass="sendie"   />
+                                <apex:commandButton action="{!insertPost}" 
+                                                value="Post" rerender="recordsection,msgs,send-message-area" /> 
+                                <apex:commandButton value="Merge Feed" oncomplete="$('#feedMerger').dialog('open');" /> 
+                       </apex:form>  
+                </div>
+           </apex:outputpanel>
+        </div>
+        
+    </div>
+        
+
+      <div id="addPost" style="display: none" >  
+
+              <apex:outputpanel id="atd">  
+              
+                  <h2>New Post</h2>
+                                    
+                    <apex:form >
+                            <apex:panelGrid columns="2" width="85%">
+    
+                                 <apex:outputLabel value="Post"/><apex:inputTextArea value="{!postBody}"   />
+                                 
+                                  <apex:commandButton action="{!insertPost}" 
+                                               oncomplete="$('#addPost').dialog('close')" value="Create this Post" rerender="recordsection, msgs" /> 
+                                  <apex:commandButton value="Cancel" immediate="true" 
+                                               oncomplete="$('#addPost').dialog('close')"/>
+                             </apex:panelGrid>
+                   </apex:form>  
+               
+               </apex:outputpanel> 
+
+       </div> <!-- addPost -->
+
+</div> <!-- container -->
+
+      <div id="feedMerger" style="display: none" >  
+
+              <apex:outputpanel id="fmd">  
+              
+                  <h2>Merge a Chatter Feed</h2>
+                  <p>&nbsp;</p>
+                                    
+                    <apex:form >
+
+                              <apex:outputpanel id="soblist">
+                                    <apex:selectList size="1" value="{!activeSObjectType}">
+                                        <apex:selectOptions value="{!SObjectList}" />
+                                      <apex:actionSupport event="onchange" rerender="sobs" action="{!updateSObjects}" onComplete="$('.sobs').fadeIn();">
+                                        <apex:param name="oc1" value="{!activeSObjectType}" />
+                                        <apex:param name="oc2" value="{!activeSObjectType}" assignTo="{!newactiveSObjectType}" />
+                                      </apex:actionSupport>
+                                   </apex:selectList>  
+                                </apex:outputpanel><BR/>
+                                <apex:outputpanel id="sobs" styleClass="sobs" style="display:none">
+                                    <apex:selectList size="1" value="{!activeSObject}"  >
+                                        <apex:selectOptions value="{!SObjects}" />
+                                          <apex:actionSupport event="onchange" rerender="feeditems" action="{!updateSObjectFeed}"  onComplete="$('.feeditems').show();">
+                                            <apex:param name="ActiveSObjectId" value="{!activeSObject}" />
+                                          </apex:actionSupport>
+                                    </apex:selectList>
+                                </apex:outputpanel><BR/>
+                                <apex:outputpanel id="feeditems"  styleClass="feeditems" style="display:none">
+                                        <apex:selectList multiselect="true" value="{!activeSObjectFeeditems}">  
+                                        <apex:selectOptions value="{!SObjectFeed}" />
+                                    </apex:selectList>
+                                </apex:outputpanel><BR/>                                 
+                              <p>&nbsp;</p>
+                                <apex:commandButton action="{!mergeFeed}" 
+                                               oncomplete="$('#feedMerger').dialog('close')" value="Merge Selected" rerender="recordsection,msgs" /> 
+                                &nbsp; &nbsp;<apex:commandButton value="Cancel" immediate="true" 
+                                               oncomplete="$('#feedMerger').dialog('close')"/>
+                                               
+
+
+                   </apex:form>  
+               
+               </apex:outputpanel> 
+
+       </div> <!-- feedMerger --> 
+
+
+      <div id="register" style="display: none" >  
+
+              <apex:outputpanel id="rop">  
+
+                  <apex:pageMessages id="msgs" />   
+                                
+                  <h2>Register</h2>     
+                  <p>&nbsp;</p>                              
+
+                    <apex:form >
+                            <apex:panelGrid columns="2" width="85%">
+
+                                   <apex:outputText value="Access Code" styleClass="label" rendered="{!session.Requires_Verification__c}"/>
+                                   <apex:inputText value="{!userInputedAccessCode}" rendered="{!session.Requires_Verification__c}"/>
+
+                                   <apex:outputText styleClass="label" value="Desired Username"/>
+                                   <apex:inputText value="{!activeUserHandle}"/>
+
+                             </apex:panelGrid>
+                           <p align="center"><BR/>                              
+                             <!--  <apex:commandButton action="{!register}" 
+                                               oncomplete="checkReg();" value="Register" /> -->
+                             <apex:commandButton action="{!register}" 
+                                               oncomplete="checkReg();" value="Register" rerender="recordsection,rop" /> 
+
+                           </p>
+                   </apex:form>  
+                 
+               </apex:outputpanel> 
+               <p>&nbsp;</p>                              
+       </div> <!-- register -->
+
+        <apex:form >
+            <apex:actionFunction name="updateAll" action="{!updateAll}" reRender="recordsection"  />
+        </apex:form>
+        
+ </apex:page>

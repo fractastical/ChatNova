@@ -1,0 +1,10 @@
+<apex:component >
+<apex:attribute name="userid" type="String" required="true" description="User ID" />
+<apex:attribute name="width" type="String" required="true" description="Width of Image" />
+<apex:attribute name="height" type="String" required="true" description="Height of Image" />
+<apex:attribute name="name" type="String" required="false" description="Optional name for tooltip" />
+
+   <apex:outputlink value="/{!userid}">
+         <apex:image value="/userphoto?u={!userid}&v=1&s=T" height="{!height}" width="{!width}" title="{!name}" /> 
+    </apex:outputlink>            
+</apex:component>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexComponent xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>18.0</apiVersion>
+    <description>Pass in a user id and get a rendered profile image. Component uses a URL &apos;hack&apos; which may change. At  least having it in a component we only need to change it in one spot</description>
+    <label>ChatterProfileImage</label>
+</ApexComponent>

@@ -1,0 +1,29 @@
+<apex:page controller="TaskAdminController" action="{!generateChartURLs}">
+
+    <apex:pageBlock title="Chatter Tasks Admin"> 
+    
+        <apex:pageMessages id="msgs"/>
+    
+        <apex:pageBlockSection title="Activity per User">
+            <apex:image url="{!userChartURL}" />
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="Number of Subscriptions per User ">
+            <apex:image url="{!userFollowingURL}" />
+        </apex:pageBlockSection>    
+        <apex:pageBlockSection title="Outstanding Tasks per User">
+            <apex:image url="{!userOTURL}" />
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="Assigned and Completed Tasks" >
+            <apex:image url="{!comparisonChartURL}" />
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="Posts over the Last Week">
+            <apex:image url="{!activityChartURL}" />
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="Comments over the last week">
+            <apex:image url="{!commentChartURL}" />
+        </apex:pageBlockSection>
+    
+    
+    </apex:pageBlock>    
+
+</apex:page>

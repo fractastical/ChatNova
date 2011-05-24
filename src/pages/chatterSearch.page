@@ -1,0 +1,288 @@
+<!-- Jonathan Hersh - jhersh@salesforce.com - 3/4/2010 -->
+<apex:page controller="chatterSearch" tabstyle="Chatter_Search__tab" showheader="{!!showAbout}">
+
+<apex:includescript value="{!URLFOR( $Resource.chatterSearch, 'jquery.min.js' )}" />
+<apex:includescript value="{!URLFOR( $Resource.chatterSearch, 'highcharts.js' )}" />
+<apex:includescript value="{!URLFOR( $Resource.chatterSearch, 'scripts.js' )}" />
+<apex:stylesheet value="{!URLFOR( $Resource.chatterSearch, 'styles.css' )}" />
+
+<!--[if IE]>
+   <script src="{!URLFOR( $Resource.chatterSearch, 'excanvas.compiled.js' )}" type="text/javascript"></script>
+<![endif]-->
+    
+<apex:sectionheader title="Chatter Search" rendered="{!!showAbout}" />
+
+<apex:form id="searchForm" rendered="{!!showAbout}">
+    <apex:pageblock id="searchBlock" title="Filters">
+        <apex:pageblockbuttons >
+            <apex:commandbutton value="Search" action="{!doSearch}" rerender="chartJS,searchForm,resultForm" />
+            <apex:commandbutton value="Reset" action="{!doReset}" rerender="searchForm,resultForm" />
+        </apex:pageblockbuttons>
+        <apex:pageblocksection id="searchStrSection" showheader="false" columns="2">
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="searchStr" value="Search" />
+                <apex:inputtext value="{!settings.searchStr}" id="searchStr" styleclass="searchStr" />
+            </apex:pageblocksectionitem>    
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="startDT" value="Show Updates From" />
+                <apex:inputfield id="startDT" value="{!settings.startDT.activitydatetime}" />
+            </apex:pageblocksectionitem>
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="mincomments" value="Show updates with at least this many comments" />
+                <apex:selectList id="mincomments" value="{!settings.minComments}" multiselect="false" size="1">
+                    <apex:selectOptions value="{!minComments}" />
+                </apex:selectList>
+            </apex:pageblocksectionitem> 
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="endDT" value="To" />
+                <apex:inputfield id="endDT" value="{!settings.endDT.activitydatetime}" />
+            </apex:pageblocksectionitem> 
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="replies" value="Show posts to other users' profiles?" />
+                <apex:inputcheckbox id="replies" value="{!settings.showReplies}" />
+            </apex:pageblocksectionitem> 
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="showgraphs" value="Show Extra Details" />
+                <apex:inputcheckbox id="showgraphs" value="{!settings.showGraphs}" />
+            </apex:pageblocksectionitem>   
+            
+        </apex:pageblocksection>
+        <apex:pageblocksection title="Attachments">
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="hasatt" value="Has Attached File?" />
+                <apex:inputcheckbox id="hasatt" value="{!settings.hasAttached}" />
+            </apex:pageblocksectionitem>
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="haslink" value="Has Attached Link?" />
+                <apex:inputcheckbox id="haslink" value="{!settings.hasLink}" />
+            </apex:pageblocksectionitem>
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="filename" value="File Name Contains" />
+                <apex:inputtext id="filename" value="{!settings.attachName}" />
+            </apex:pageblocksectionitem>
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="linkname" value="Link Name Contains" />
+                <apex:inputtext id="linkname" value="{!settings.linkName}" />
+            </apex:pageblocksectionitem>
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="fileext" value="File Type" />
+                <apex:selectList value="{!settings.attachExt}" multiselect="false" size="1">
+                    <apex:selectOptions value="{!fileExtensions}" />
+                </apex:selectList>
+            </apex:pageblocksectionitem> 
+            <apex:pageblocksectionitem >
+                <apex:outputlabel for="linkurl" value="Link URL Contains" />
+                <apex:inputtext id="linkurl" value="{!settings.linkURL}" />
+            </apex:pageblocksectionitem>     
+        </apex:pageblocksection>    
+    </apex:pageblock>
+</apex:form>
+
+<apex:form id="resultForm" rendered="{!!showAbout}">
+    <apex:pageblock id="statsBlock" rendered="{!searched}" title="Search Results">
+        <apex:pageblocksection title="Statistics">
+            <apex:outputpanel >
+                <span class="bigFont">{!results.uniqueuserCount} / {!results.allUserCount} ({!results.termPenetration}%)</span> users in this org have at least one update matching this search
+            </apex:outputpanel>
+            <apex:outputpanel >
+                <span class="bigFont">{!results.statusCount}</span> matching status updates
+            </apex:outputpanel>
+        </apex:pageblocksection>
+        <apex:pageblocksection id="statusBlock" rendered="{!AND( searched, results.statuses.size > 0)}" title="Status Updates" columns="2">
+            <apex:pageblocksectionitem >
+                <apex:commandlink value="&lt; {!prevLink}" styleclass="nameLink" action="{!prevUpdates}" rerender="statusBlock,statusBlock2" rendered="{!results.first > 0}" />
+                <apex:commandlink value="{!nextLink} &gt;" 
+                    styleclass="nameLink" action="{!nextUpdates}" rerender="statusBlock,statusBlock2" rendered="{!results.first + ROWS_PER_PAGE < results.statuses.size}"/>
+            </apex:pageblocksectionitem>
+            <apex:pageblocksectionitem >
+                <p class="stats">Viewing updates <span class="slightlyLessBigFont">{!results.first + 1}-{!if( results.first + ROWS_PER_PAGE > results.statuses.size, results.statuses.size, results.first + ROWS_PER_PAGE)}</span> of <span class="slightlyLessBigFont">{!results.statuses.size}</span></p>
+            </apex:pageblocksectionitem>
+        </apex:pageblocksection>
+        <apex:pageblocksection id="statusBlock2" rendered="{!AND( searched, results.statuses.size > 0)}" showheader="false" columns="1">
+            <apex:pageblocktable value="{!results.statuses}" var="s" first="{!results.first}" rows="{!ROWS_PER_PAGE}">
+                <apex:column style="width:35px">
+                    <apex:outputlink value="/{!s.uid}" target="_top" title="{!s.uname}" style="border:0; text-decoration:none;"><apex:image value="/userphoto?u={!s.uID}&v=1&s=T" height="32" width="32" /></apex:outputlink>
+                </apex:column>
+                <apex:column headervalue="Updates">
+                    <apex:outputlink value="/{!s.uid}" target="_top" styleclass="nameLink" style="color:#015BA7;">{!s.uname}</apex:outputlink>
+                    <apex:outputpanel rendered="{!AND( s.pid != s.uid, s.pname != '')}">
+                        to&nbsp;<apex:outputlink value="/{!s.pid}" target="_top" styleclass="nameLink" style="color:#015BA7;">{!s.pname}</apex:outputlink>:&nbsp;
+                    </apex:outputpanel>
+                    {!s.msg}
+                </apex:column>
+                <apex:column headervalue="Comments">
+                    <apex:outputtext rendered="{!s.numcomments > 0}">{!s.numcomments}</apex:outputtext>
+                </apex:column>
+                <apex:column headervalue="Attached Link" >
+                    <apex:outputlink value="{!s.attURL}" rendered="{!s.hasLink}">{!s.attName}</apex:outputlink>
+                </apex:column>
+                <apex:column headervalue="Attached File" >
+                    <apex:outputlink value="{!s.attURL}" rendered="{!s.hasAtt}">{!s.attName}</apex:outputlink>
+                </apex:column>
+                <apex:column headervalue="Time">
+                    <span class="timeAgo">{!s.reltime}</span>
+                </apex:column>
+            </apex:pageblocktable>
+        </apex:pageblocksection>
+        <apex:pageblocksection title="Roles and Profiles" columns="1" rendered="{!AND( settings.showGraphs, results.statusCount > 0)}">
+            <apex:outputpanel >
+                <div id="role-status-lines" style="height: 400px; width: 100%;" ></div>
+            </apex:outputpanel>
+            <apex:outputpanel >
+                <div id="profile-status-lines" style="height: 400px; width: 100%;" ></div>
+            </apex:outputpanel>
+        </apex:pageblocksection>
+    </apex:pageblock>
+    
+    <div class="about">
+        <apex:outputlink value="javascript:void(0)" onclick="launchAboutBox();">About</apex:outputlink>
+    </div>
+
+<!-- This needs to be here, rather than an external JS file, so that it can be rerendered with new data. -->
+<apex:outputpanel id="chartJS" rendered="{!settings.showGraphs}">
+<script type="text/javascript">    
+    $(document).ready(function() {    
+        var chart = new Highcharts.Chart({
+           chart: {
+              renderTo: 'role-status-lines',
+              defaultSeriesType: 'column',
+              margin: [50, 0, 110, 30]
+           },
+           title: {
+              text: 'Updates by User Role',
+              style: {
+                 margin: '10px 30px 0 0'
+              }
+           },
+           xAxis: {
+              categories: [
+                    <apex:repeat value="{!roleNames}" var="rn">'{!JSINHTMLENCODE(rn)}',</apex:repeat>
+              ],
+              labels: {
+                 rotation: -45,
+                 align: 'right',
+                 style: {
+                     font: 'normal 12px Verdana, sans-serif'
+                 }
+              }
+           },
+           yAxis: {
+              title: {
+                 text: null
+              },
+              plotLines: [{
+                 value: 0,
+                 width: 1,
+                 color: '#808080'
+              }],
+              min: 0
+           },
+           credits: { enabled: false },
+           tooltip: {
+              formatter: function() {
+                        return '<b>'+ this.series.name +'</b><br/>'+
+                    this.x +': '+ this.y;
+              }
+           },
+           legend: {
+              layout: 'vertical',
+              style: {
+                 left: 'auto',
+                 bottom: 'auto',
+                 right: '10px',
+                 top: '0px'
+              }
+           },
+           series: [
+                <apex:repeat value="{!roleGraph}" var="rg">
+                {
+                    name: '{!JSINHTMLENCODE(rg.key)}',
+                    data: [
+                        <apex:repeat value="{!rg.values}" var="v">{!v},</apex:repeat>
+                    ]
+                },
+                </apex:repeat>
+            ]
+        });
+        
+        var chart2 = new Highcharts.Chart({
+           chart: {
+              renderTo: 'profile-status-lines',
+              defaultSeriesType: 'column',
+              margin: [50, 0, 110, 30]
+           },
+           title: {
+              text: 'Updates by User Profile',
+              style: {
+                 margin: '10px 30px 0 0'
+              }
+           },
+           xAxis: {
+              categories: [
+                    <apex:repeat value="{!profileNames}" var="rn">'{!JSINHTMLENCODE(rn)}',</apex:repeat>
+              ],
+              labels: {
+                 rotation: -45,
+                 align: 'right',
+                 style: {
+                     font: 'normal 12px Verdana, sans-serif'
+                 }
+              }
+           },
+           yAxis: {
+              title: {
+                 text: null
+              },
+              plotLines: [{
+                 value: 0,
+                 width: 1,
+                 color: '#808080'
+              }],
+              min: 0
+           },
+           credits: { enabled: false },
+           tooltip: {
+              formatter: function() {
+                        return '<b>'+ this.series.name +'</b><br/>'+
+                    this.x +': '+ this.y;
+              }
+           },
+           legend: {
+              layout: 'vertical',
+              style: {
+                 left: 'auto',
+                 bottom: 'auto',
+                 right: '10px',
+                 top: '0px'
+              }
+           },
+           series: [
+                <apex:repeat value="{!profileGraph}" var="pg">
+                {
+                    name: '{!JSINHTMLENCODE(pg.key)}',
+                    data: [
+                        <apex:repeat value="{!pg.values}" var="v">{!v},</apex:repeat>
+                    ]
+                },
+                </apex:repeat>
+            ]
+        });
+
+    });
+</script>
+</apex:outputpanel>
+
+</apex:form>
+
+<apex:pageblock rendered="{!showAbout}" tabstyle="Chatter_Search__tab">
+        <apex:pageblocksection columns="1">
+            <p>Chatter Search is proudly brought to you by <a href="mailto:jhersh@salesforce.com">Jonathan Hersh</a>. Feedback? Email me!</p>
+        </apex:pageblocksection>
+        <apex:pageblocksection title="Known Issues" columns="1">
+            <p>File names in the 'Attached File' column on the Updates table are not clickable. Summer '10 is required for this functionality.</p>
+            <p>Profile images can occasionally be out of date. Summer '10 fixes this too.</p>
+            <p>File types are not always available to Chatter Search via the API, so if you search for a particular file type, Chatter Search will make its best guess.</p>
+        </apex:pageblocksection>
+</apex:pageblock>
+
+</apex:page>

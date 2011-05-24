@@ -1,0 +1,25 @@
+<!-- Jonathan Hersh - jhersh@salesforce.com - 3/1/2010 -->
+<apex:page showheader="false" controller="chatterMiniProfile">
+	<apex:stylesheet value="{!URLFOR( $Resource.chatterSidebarProfile, 'styles.css' )}" />
+	<apex:includescript value="{!URLFOR( $Resource.chatterSidebarProfile, 'scripts.js' )}" />
+	
+	<apex:form id="theform">
+		
+		<div class="chatter-profile">		
+			<div class="imgRow">
+				<a target="_top" href="/{!$User.Id}"><apex:image value="/userphoto?u={!$User.Id}&v=1&s=T" styleclass="profileImg" /></a>
+				<span class="fNumber"><span class="bigNumber">
+						<a href="javascript:void(0)" id="moreFollowersLink" onclick="launchFollowerBox( '{!$User.Id}', {!followers} );">{!followers}</a>
+				</span><br/><em>followers</em></span>
+				<span class="fNumber"><span class="bigNumber">
+					<a href="javascript:void(0)" id="moreFollowingLink" onclick="launchFollowingBox( '{!$User.Id}', {!following} );">{!following}</a>
+				</span><br/><em>following</em></span>
+				<span class="fNumber"><span class="bigNumber">
+					{!updates}
+				</span><br/><em>updates</em></span>
+			</div>
+		</div>
+	
+	</apex:form>
+
+</apex:page>

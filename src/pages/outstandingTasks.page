@@ -1,0 +1,191 @@
+<apex:page controller="TaskController">
+
+
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-1.3.2.min.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-ui-1.7.2.custom.min.js')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/css/cupertino/jquery-ui-1.7.2.custom.css')}"/>
+
+                    <script type="text/javascript">
+                    
+                           $(function(){      
+                           
+                  
+                                $("#completed").dialog({
+                                    autoOpen: false,
+                                    modal: true,
+                                    closeable: false,
+                                    resizable: false,
+                                    width: 650
+                                });
+
+                                $("#comment").dialog({
+                                    autoOpen: false,
+                                    modal: true,
+                                    closeable: false,
+                                    resizable: false,
+                                    width: 650
+                                });
+                            
+                            });
+                            
+                      </script>
+
+
+   <h1> Task Manager </h1>
+
+    <apex:pageMessages id="msgs" />
+       
+   <apex:form id="form">
+       
+       <apex:outputPanel id="rerenderMe">
+          <!-- if we don't specify an element to rerender we will end up rerendering the whole page and we don't want that. -->
+       </apex:outputPanel>
+          
+       <apex:pageBlock id="tasks">
+          
+          <apex:pageBlockSection title="My Outstanding Tasks" columns="1">
+          
+                  <apex:pageBlockTable value="{!myToDoList}" title="My Outstanding Tasks" var="td" id="mot">
+                     
+                        <apex:column headerValue="Name">       
+                          <apex:outputField value="{!td.name}"/>             
+                        </apex:column>
+            
+                        <apex:column headerValue="Description">       
+                          <apex:outputField value="{!td.Description__c}"/>             
+                        </apex:column>
+            
+                        <apex:column headerValue="Completed?">       
+                                <apex:commandLink rerender="rerenderMe" value="Mark complete" oncomplete="$('#completed').dialog('open')" rendered="{!NOT(td.Completed__c)}"  >
+                                      <apex:param name="tdid" value="{!td.id}" assignTo="{!tdid}"/>
+                                </apex:commandLink>
+                            <apex:outputField rendered="{!td.Completed__c}" value="{!td.Completed__c}"/>             
+                        </apex:column>
+                       <apex:column >       
+                            <apex:commandLink value="Show Feed" rerender="taskfeedblock" >
+                                        <apex:param name="tdid" value="{!td.id}" assignTo="{!tdid}" />                            
+                             </apex:commandLink>
+                        </apex:column>
+                        <apex:column >       
+                            <apex:outputPanel rendered="{!td.Completed__c}">
+                                   Under Review by&nbsp;<apex:outputText value="{!td.managed_by__r.name}" />                     
+                             </apex:outputPanel>
+                        </apex:column>
+
+                  </apex:pageBlockTable>
+          
+          </apex:PageBlockSection>
+          
+    <apex:pageBlockSection title="Task Feed" id="taskfeedblock" columns="1">
+      <apex:pageBlockTable value="{!taskItemFeed}" var="f" columns="3" border="0" frame="none" rules="none" style="border:0; background-color: #FFF;">
+       <apex:variable var="uid" value="{!f.TaskFeedItem.FeedPost.CreatedById}" />
+            <!-- display the posts -->
+            <apex:column style="border:0;"><apex:facet name="header">Posts on this item</apex:facet>
+                 <div class="bubble">
+                    <div class="rounded">
+                        <blockquote>
+                            <p>
+                               <strong><apex:outputText value="{!f.TaskFeedItem.CreatedBy.FirstName}" id="posterfname"/>&nbsp;<apex:outputText value="{!f.TaskFeedItem.CreatedBy.LastName}" id="posterlname"/>:</strong>&nbsp;      
+                               
+                               <apex:repeat value="{!f.TaskFeedItem.FeedTrackedChanges}" var="ffc" >
+                                   <span style="display:none;"><apex:outputText value="{!ffc.FieldName} changed to" /><apex:outputText value="{!ffc.NewValue}" /></span>     
+                               </apex:repeat>                       
+                                <apex:outputText rendered="{!f.markedComplete}" value="This item was marked complete" />   
+                               <apex:outputText rendered="{!f.markedIncomplete}" value="This item was reviewed and marked incomplete" />  
+                               <apex:outputText rendered="{!f.markedReviewed}" value="This item was reviewed and verified as complete" />
+                               <apex:outputText rendered="{!f.created}" value="This task was created and assigned to {!f.assignedTo}" />
+                                         
+                               <apex:outputText value=" {!f.TaskFeedItem.FeedPost.Body}" id="feedbody"/></p>
+                        </blockquote>    
+                    </div>  
+                    <cite class="rounded">Posted at
+                        <apex:outputText value=" {0,date,M/d/yyyy h:mm a}">
+                           <apex:param value="{!f.TaskFeedItem.CreatedDate}" />
+                       </apex:outputText>
+                    </cite>
+                  </div>
+            </apex:column>
+            <!-- display the comments, which is a nested collection within my newsfeed results -->
+            <apex:column style="border:0;"><apex:facet name="header">Follow-up Comments</apex:facet>
+                <div class="bubble">    
+                    <div class="rounded"> 
+                        <apex:Repeat value="{!f.TaskFeedItem.FeedComments}" var="c">
+                            <apex:variable var="cid" value="{!c.CreatedById}" />
+                            <blockquote>
+                              <strong><apex:outputText value="{!c.CreatedBy.FirstName}"/>&nbsp;<apex:outputText value="{!c.CreatedBy.LastName}"/>: </strong>
+                              <apex:outputText value=" {!c.CommentBody}" id="comment-repeat"/>
+                            </blockquote>
+                        </apex:Repeat>
+                        <apex:commandLink rerender="rerenderMe" value="Post a follow-up comment" oncomplete="$('#comment').dialog('open')">
+                              <apex:param name="fiid" value="{!f.TaskFeedItem.id}" assignTo="{!fiid}"/>
+                        </apex:commandLink>
+                    </div>
+                  </div>
+            </apex:column>
+        </apex:pageBlockTable>
+     </apex:PageBlockSection>
+            
+       </apex:pageBlock>
+  </apex:form>
+
+   
+       
+             <div id="completed" style="display: none" >
+
+              <apex:outputpanel >  
+              
+                  <apex:form >         
+                          
+                    <apex:pageBlock title="Mark a task complete" >
+
+                              <apex:panelGrid columns="2" width="85%" cellpadding="3" cellspacing="3">
+
+                                  <apex:outputLabel value="Note"/><apex:inputTextArea value="{!note}" />
+                                  
+                                  <apex:commandButton action="{!markComplete}"   
+                                               oncomplete="$('#completed').dialog('close')" value="Mark Completed" rerender="mot,taskfeed,msgs" />
+
+                                  <apex:commandButton value="Cancel" immediate="true" 
+                                               oncomplete="$('#completed').dialog('close')"/>
+                                               
+                             </apex:panelGrid>  
+                             
+                    </apex:pageBlock>
+                  
+                  </apex:form>  
+               
+               </apex:outputpanel> 
+
+       </div> <!-- completed -->
+       
+       <div id="comment" style="display: none" >
+                
+              <apex:outputpanel >  
+              
+                 <apex:form >
+                     
+                        <apex:pageBlock title="Comment on This Item" >
+    
+                                  <apex:panelGrid columns="2" width="95%" cellpadding="3" cellspacing="3">
+    
+                                      <apex:outputLabel value="Note"/><apex:inputTextArea value="{!note}"  rows="5" cols="26"/>
+                                      
+                                      <apex:commandButton action="{!submitComment}"   
+                                                   oncomplete="$('#comment').dialog('close')" value="Post this comment" rerender="taskfeedblock" />
+    
+                                      <apex:commandButton value="Cancel" immediate="true" 
+                                                   oncomplete="$('#comment').dialog('close')"/>
+                                                   
+                                 </apex:panelGrid>  
+                                 
+                        </apex:pageBlock>
+                    
+                   </apex:form>
+               
+               </apex:outputpanel> 
+
+       </div> <!-- comment -->
+
+   
+
+</apex:page>

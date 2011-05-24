@@ -1,0 +1,139 @@
+<!-- Quinton Wall - qwall@salesforce.com - 3/1/2010 -->
+<!-- MOD Joel Dietz - jdietz@gmail.com - 3/18/2010 -->
+
+<apex:page controller="FollowerFeedController" tabstyle="Chatter_Bubbles__tab" action="{!init}">   
+
+<apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-1.3.2.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-ui-1.7.2.custom.min.js')}"/>
+ 
+<c:ChatterBubblesInc />   
+
+<apex:sectionheader title="Chatter Bubbles" />
+    
+<apex:pageblock title="" id="recordsection">
+
+  <apex:pageMessages /> 
+
+  <apex:form >   
+
+  <!-- User Status -->
+        <div class="bubble">
+            <div class="rounded" style="width: 80%;" >
+                <blockquote>
+                    <c:ChatterProfileImage userid="{!currid}" width="40" height="40"/>
+                    <c:ChatterBubblePeeps uID="{!currid}" />
+                    <apex:inputText value="{!status}" id="status" maxlength="100" size="70" style="padding-bottom: 6px;"></apex:inputText> 
+                    <apex:commandLink value="" action="{!doUserStatus}" rerender="recordsection">
+                            <apex:image url="{!URLFOR($Resource.ChatBubbles, 'ChatBubbles/refresh2.png')}" width="30" height="30" longdesc="Rechat it!"/>  
+                   </apex:commandLink>  
+                   
+                </blockquote>
+            </div>
+            <cite class="rounded"><strong>Whatcha doing?</strong></cite>
+       </div>
+   <!-- end user status -->
+   
+   <div id="myBubbles">
+   
+   <!-- take our feeds and loop through them to display -->    
+   <apex:pageBlockTable value="{!activePage.pageFeed}" var="f" columns="3" border="0" frame="none" rules="none" style="border:0; background-color: #e6e6e6;">
+       <apex:variable var="uid" value="{!f.FeedPost.CreatedById}" />
+            <!-- display the posts -->
+            <apex:column style="border:0;"><apex:facet name="header">What People Are Chatting</apex:facet>
+                 <div class="bubble">
+                    <div class="rounded">
+                        <blockquote>
+                            <p><c:chatterTooltip2 uID="{!uid}" />
+                               <apex:outputText value=" {!f.FeedPost.Body}" id="feedbody"/></p>
+                        </blockquote>
+                    </div>  
+                    <cite class="rounded">Witty chat posted at
+                        <apex:outputText value=" {0,date,M/d/yyyy h:mm a}">
+                           <apex:param value="{!f.CreatedDate}" />
+                       </apex:outputText>
+                    </cite>
+                  </div>
+            </apex:column>
+            <!-- display the comments, which is a nested collection within my newsfeed results -->
+            <apex:column style="border:0;"><apex:facet name="header">Comments</apex:facet>
+                <div class="bubble">
+                    <div class="rounded"> 
+                        <apex:Repeat value="{!f.FeedComments}" var="c">
+                            <apex:variable var="cid" value="{!c.CreatedById}" />
+                            <blockquote>
+                              <strong><apex:outputText value="{!c.CreatedBy.FirstName}"/>  <apex:outputText value="{!c.CreatedBy.LastName}"/>: </strong>
+                              <apex:outputText value=" {!c.CommentBody}" id="comment-repeat"/>
+                            </blockquote>
+                        </apex:Repeat>
+                    </div>
+                </div>
+            </apex:column>
+            
+            <!-- from here down is actions. no more feed information -->
+            <apex:column style="border:0; width: 150px;"><apex:facet name="header">Actions</apex:facet>
+                <div class="bubble">
+                    <blockquote>
+                        <!-- rechat -->
+                         <apex:commandLink value="" action="{!doRechat}" rerender="recordsection">
+                            <apex:param name="rechatid" value="{!f.id}" assignTo="{!rechatid}"/>
+                             <apex:param name="rechatfrom" value="{!f.CreatedById}" assignTo="{!rechatfrom}"/>
+                            <apex:param name="rechatbody" value="{!f.FeedPost.Body}" assignTo="{!rechatbody}"/>
+                            <apex:image url="{!URLFOR($Resource.Rechatter, 'images/rechat.jpg')}" width="20" height="20" longdesc="Rechat it!"/>
+                         </apex:commandLink>Rechat it!
+                         <br/>
+                         <!-- add to favorites -->
+                       <apex:commandLink value="" action="{!addToFavorites}" rerender="recordsection">
+                           <apex:param name="favid" value="{!f.id}" assignTo="{!favid}"/>
+                           <apex:image url="{!URLFOR($Resource.Rechatter, 'images/favstar.png')}" width="20" height="20"/>
+                       </apex:commandLink>Add to Favorites
+                       <br/>
+                       <!-- comments -->
+                       <c:ChatterBubbleComments fID="{!f.id}"/>  <br/><br />
+                       <!-- c:ChatterRatings / -->
+                    </blockquote>
+                    <cite class="cite"><strong>Actions</strong></cite>
+              </div>
+           </apex:column>
+
+        </apex:pageBlockTable>
+        <apex:outputPanel id="bubblePageControls">
+            <apex:commandLink rendered="{!NOT(activePage.first)}" value="First" rerender="recordsection" action="{!updateActivePage}">
+                    <apex:param name="pnum" value="1" assignto="{!pnum}" />
+            </apex:commandLink> &nbsp;&nbsp;           
+            <apex:commandLink rendered="{!hasMorePagesBefore}" value="<" rerender="recordsection" action="{!updateActivePagesBackwards}">
+                    <apex:param name="pnum" value="{!activePagesStartPNumber - 1}" assignto="{!pnum}" />
+            </apex:commandLink> &nbsp;&nbsp;           
+            <apex:commandLink rendered="{!NOT(activePage.first)}" value="Previous" rerender="recordsection" action="{!prevPage}" />
+            &nbsp;&nbsp;Page:
+            <apex:repeat value="{!activePages}" var="p">
+                &nbsp;
+                <apex:commandLink rendered="{!NOT(p.isActive)}" value="{!p.pagenumber}" rerender="recordsection" action="{!updateActivePage}">
+                    <apex:param name="pnum" id="pnum" value="{!p.pagenumber}" assignto="{!pnum}" />
+                </apex:commandLink>
+                <apex:outputText rendered="{!p.isActive}" value="{!p.pagenumber}" />
+                &nbsp;&nbsp;
+            </apex:repeat>
+             <apex:commandLink rendered="{!NOT(activePage.last)}" value="Next" rerender="recordsection" action="{!nextPage}" /> &nbsp;&nbsp;
+            <apex:commandLink rendered="{!hasMorePagesAfter}" value=">" rerender="recordsection" action="{!updateActivePages}">
+                    <apex:param name="pnum" value="{!activePagesEndPNumber + 1}" assignto="{!pnum}" />
+            </apex:commandLink> &nbsp;&nbsp;           
+            <apex:commandLink rendered="{!NOT(activePage.last)}" value="Last" action="{!goToLast}" rerender="recordsection" />
+            <apex:outputpanel id="updateBubbleNPPControl" >
+                &nbsp;Bubbles to display per page:&nbsp;
+                <apex:selectList size="1" value="{!bubblesPerPage}" >  
+                    <apex:selectOptions value="{!bubblesPerPageSO}" />    
+                    <apex:actionSupport event="onchange" action="{!updateBubblesPerPage}" status="updateBubblesStatus" reRender="recordsection" />  
+                </apex:selectList>              
+            </apex:outputpanel>  
+            <BR/>
+       </apex:outputPanel>  
+     </div> <!-- end myBubbles -->
+      <apex:actionStatus id="updateBubblesStatus" onstart="$('#myBubbles').hide('fast')" onstop="$('#myBubbles').show();window.scrollTo(0,0);" >
+              <apex:facet name="start"><apex:image value="{!$Resource.GatheringInfoImage}"/></apex:facet>
+      </apex:actionStatus>
+   
+    </apex:form>
+ 
+ </apex:pageblock>
+ 
+</apex:page>

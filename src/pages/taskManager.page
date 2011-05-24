@@ -1,0 +1,31 @@
+<apex:page controller="toDoController" action="{!generateChartURLs}">
+
+
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-1.3.2.min.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-ui-1.7.2.custom.min.js')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/css/cupertino/jquery-ui-1.7.2.custom.css')}"/>
+
+  <apex:pageBlock title="Chatter Admin">
+    <apex:pageMessages id="msgs"/>
+    <apex:pageBlockSection title="Assigned and Completed Tasks" >
+        <apex:image url="{!comparisonChartURL}" />
+    </apex:pageBlockSection>
+    <apex:pageBlockSection title="Activity over the Last Week">
+        <apex:image url="{!activityChartURL}" />
+    </apex:pageBlockSection>
+    <apex:pageBlockSection title="Total Comments over the last week">
+        <apex:image url="{!commentChartURL}" />
+    </apex:pageBlockSection>
+    <apex:pageBlockSection title="Activity per User">
+        <apex:image url="{!userChartURL}" />
+    </apex:pageBlockSection>
+    <apex:pageBlockSection title="Number of Subscriptions per User ">
+        <apex:image url="{!userFollowingURL}" />
+    </apex:pageBlockSection>    
+    <apex:pageBlockSection title="Outstanding Tasks per User">
+        <apex:image url="{!userOTURL}" />
+    </apex:pageBlockSection>
+</apex:pageBlock>    
+       
+
+</apex:page>

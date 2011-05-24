@@ -1,0 +1,17 @@
+<apex:page controller="TaskAdminMiniCon" action="{!generateChartURLs}">
+
+    <apex:pageBlock title="Chatter Tasks Admin (sample)"> 
+    
+        <apex:pageMessages id="msgs"/>
+    
+        <apex:pageBlockSection title="Top ten most active users">
+            <apex:image url="{!userTopActiveChartURL}" />
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="Assigned and Completed Tasks" >
+            <apex:image url="{!comparisonChartURL}" />
+        </apex:pageBlockSection>
+
+    
+    </apex:pageBlock>    
+
+</apex:page>

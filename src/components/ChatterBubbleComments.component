@@ -1,0 +1,77 @@
+<apex:component controller="BubbleCommentController" allowDML="true">
+<apex:attribute name="fID" type="String" required="true" description="FeedPost ID" assignto="{!fID}" />
+ <apex:includescript value="{!$Resource.tooltipjquery}" />
+ 
+  <style type="text/css">  
+      .bubblec-popup{!fID} {
+            padding: 0;
+            position: relative;
+            float: left;
+        }
+             
+        div.bubblec-popup{!fID} div.tooltip {
+            padding: 6px;
+            border: 3px solid #fff;
+            background-color: #b7e0ff;
+            background-image: url({!URLFOR($Resource.ChatBubbles,'ChatBubbles/blue_fade.jpg')});
+            background-repeat: repeat-x;
+            
+            width: 220px;
+            height: 70px;
+            position: absolute;
+            top: -0px;
+            left: -500px;
+            text-align: center;
+            z-index: 3;
+            display: none;
+              -moz-border-radius:3ex;
+             -webkit-border-radius:3ex;
+        }
+  </style>
+   
+       <div class="bubblec-popup{!fID}">
+             <apex:commandLink value="" action="{!addACommentClick}" rerender="recordsection">
+               <apex:image url="{!URLFOR($Resource.ChatBubbles, 'ChatBubbles/comment.png')}" width="20" height="20"/>
+           </apex:commandLink>Add a comment
+        <div class="tooltip" id="tt{!fID}"> 
+            
+            <div style="text-align: right;">
+               <a href="javascript:hidebubble('tt{!fID}');">
+                  <apex:image url="{!URLFOR($Resource.ChatBubbles, 'ChatBubbles/close.png')}" width="20" height="20"/>
+              </a> 
+             </div>
+               <strong>Got something to add?</strong>
+             <apex:inputText value="{!comment}" id="comment" maxlength="100" size="30" style="padding-bottom: 6px;"></apex:inputText> 
+                    <apex:commandLink value="" action="{!addAComment}">
+                            <br/> <apex:image url="{!URLFOR($Resource.ChatBubbles, 'ChatBubbles/refresh2.png')}" width="25" height="25" longdesc="Leave a comment"/>  
+           </apex:commandLink> 
+           
+         </div>
+      </div>
+      
+      <script type="text/javascript">
+        $(document).ready(function() {
+            $(".bubblec-popup{!fID} a").hover(function() {
+                $(this).next("div").stop(true, true).animate({opacity: "show", left: "-230"}, "slow");
+                });
+        });
+    </script>
+    
+     <script type="text/javascript">
+    function hidebubble(id) {
+        //safe function to hide an element with a specified id
+        if (document.getElementById) { // DOM3 = IE5, NS6
+            document.getElementById(id).style.display = 'none';
+        }
+        else {
+            if (document.layers) { // Netscape 4
+                document.id.display = 'none';
+            }
+            else { // IE 4
+                document.all.id.style.display = 'none';
+            }
+        }
+   
+    }
+     </script>
+</apex:component>

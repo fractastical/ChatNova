@@ -1,0 +1,21 @@
+<apex:page controller="ChatController" showHeader="false">
+
+                              <apex:repeat value="{!chatPosts}" var="cp">
+                                        <div class="post{!IF(cp.newPost,' new','')}">
+                                            <span class="posttime">Posted at&nbsp;{!cp.createdDate}</span>
+                                            <span class="handle"> <apex:outputtext value="{!cp.userHandle}" /></span>
+            
+                                             <p>{!cp.postBody}&nbsp;&nbsp;</p>
+                                             <apex:outputPanel rendered="{!cp.hasComments}">
+                                                <span class="comments">
+                                                     <apex:repeat value="{!cp.comments}" var="c" >
+                                                         <div class="mergedFeed">
+                                                            {!c.CreatedBy.FirstName}&nbsp;{!c.CreatedBy.LastName}: {!c.CommentBody}  
+                                                         </div>
+                                                     </apex:repeat>
+                                                 </span>
+                                             </apex:outputPanel>
+                                        </div>
+                              </apex:repeat>
+
+</apex:page>

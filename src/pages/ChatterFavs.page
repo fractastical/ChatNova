@@ -1,0 +1,49 @@
+<apex:page controller="ChatterFavsController" tabstyle="Chatter_Favorites__tab">
+<apex:sectionheader title="Chatter Favorites" />
+<apex:pageblock id="recordsection">
+<apex:pageMessages />
+<c:ChatterBubblesInc />
+
+<apex:form >
+
+   <apex:pageBlockTable value="{!myfavorites}" var="f" id="recordsection" columns="2" border="0" frame="none" rules="none" style="border:0; background-color: #e6e6e6;">
+       <apex:variable var="uid" value="{!f.FeedPost.CreatedById}" />
+            <apex:column >
+                <apex:facet name="header">From</apex:facet>
+                <div class="bubble">
+                    <div class="rounded">
+                        <blockquote>
+                            <p><c:chatterTooltip2 uID="{!uid}" />
+                              <apex:outputText value=" {!f.FeedPost.Body}" id="feedbody"/></p>
+                        </blockquote>
+                    </div>
+                    <cite class="rounded">This fav was posted at
+                        <apex:outputText value=" {0,date,M/d/yyyy h:mm a}">
+                           <apex:param value="{!f.CreatedDate}" />
+                       </apex:outputText>
+                    </cite>
+               </div>
+            </apex:column>
+             <apex:column >
+                <apex:facet name="header">Actions</apex:facet>
+                   <div class="bubble">
+                        <blockquote>
+                            <apex:commandLink value="" action="{!removeFromFavorites}" rerender="recordsection">
+                               <apex:param name="favid" value="{!f.id}" assignTo="{!favid}"/>
+                               <apex:image url="{!URLFOR($Resource.Rechatter, 'images/favstar.png')}" width="20" height="20"/>
+                           </apex:commandLink>Remove from Favorites
+                           <br/>
+                        </blockquote>
+                         <cite class="cite"><strong>Actions</strong></cite>
+                   </div>
+            </apex:column>
+          
+      </apex:pageBlockTable>
+    
+      
+      
+</apex:form>
+     </apex:pageBlock>
+     
+    
+</apex:page>

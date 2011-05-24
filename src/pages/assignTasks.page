@@ -1,0 +1,141 @@
+<apex:page controller="TaskController" action="{!loadAssignedTasks}">
+  
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-1.3.2.min.js')}"/>
+  <apex:includeScript value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/js/jquery-ui-1.7.2.custom.min.js')}"/>
+  <apex:stylesheet value="{!URLFOR($Resource.JQueryUICup,'jqueryUICup/css/cupertino/jquery-ui-1.7.2.custom.css')}"/>
+
+                    <script type="text/javascript">
+                    
+                           $(function(){      
+                  
+                                $("#addTask").dialog({
+                                    autoOpen: false,
+                                    modal: true,
+                                    closeable: false,
+                                    resizable: false,
+                                    width: 600
+                                });
+                                
+                            });
+                            
+                      </script>
+
+
+   <h1>Task Manager</h1> 
+
+    <apex:pageMessages id="msgs"/>
+
+   <apex:form id="form">
+
+
+           
+       <apex:outputPanel id="rerenderMe">
+          <!-- if we don't specify an element to rerender we will end up rerendering the whole page and we don't want that. -->
+       </apex:outputPanel>
+          
+
+    <apex:pageBlock id="recordsection" >
+         <div id="myrecordsection">
+        
+           <apex:pageBlockSection title="All Assigned Tasks" columns="1">
+        
+              <apex:pageBlockTable value="{!activePage.pageTasks}" title="Tasks to Review" var="td" id="ttr">
+             
+                <apex:column headerValue="Name">       
+                  <apex:outputField value="{!td.name}"/>             
+                </apex:column>
+    
+                <apex:column headerValue="Description">       
+                  <apex:outputField value="{!td.Description__c}"/>             
+                </apex:column>
+                
+                <apex:column headerValue="Assigned to">       
+                  <apex:outputField value="{!td.assigned_to__r.name}"/>             
+                </apex:column>
+    
+                <apex:column headerValue="Managed by">       
+                  <apex:outputField value="{!td.managed_by__r.name}"/>             
+                </apex:column>
+    
+                <apex:column headerValue="Completed?">    
+                      <apex:outputField value="{!td.Completed__c}"/><BR/>
+                </apex:column>
+                
+                <apex:column headerValue="Reviewed?">
+                       <apex:outputField value="{!td.Reviewed__c}"/><BR/> 
+                </apex:column>
+                                                 
+          </apex:pageBlockTable>
+          
+        </apex:pageBlockSection>
+        <apex:outputPanel id="taskPageControls">
+                <apex:commandLink rendered="{!NOT(activePage.first)}" value="First" rerender="recordsection" action="{!updateActivePage}">
+                        <apex:param name="pnum" value="1" assignto="{!pnum}" />
+                </apex:commandLink> &nbsp;&nbsp;           
+                <apex:commandLink rendered="{!hasMorePagesBefore}" value="<" rerender="recordsection" action="{!updateActivePagesBackwards}">
+                        <apex:param name="pnum" value="{!activePagesStartPNumber - 1}" assignto="{!pnum}" />
+                </apex:commandLink> &nbsp;&nbsp;           
+                <apex:commandLink rendered="{!NOT(activePage.first)}" value="Previous" rerender="recordsection" action="{!prevPage}" />
+                &nbsp;&nbsp;Page:
+                <apex:repeat value="{!activePages}" var="p">
+                    &nbsp;
+                    <apex:commandLink rendered="{!NOT(p.isActive)}" value="{!p.pagenumber}" rerender="recordsection" action="{!updateActivePage}">
+                        <apex:param name="pnum" id="pnum" value="{!p.pagenumber}" assignto="{!pnum}" />
+                    </apex:commandLink>
+                    <apex:outputText rendered="{!p.isActive}" value="{!p.pagenumber}" />
+                    &nbsp;&nbsp;
+                </apex:repeat>
+                 <apex:commandLink rendered="{!NOT(activePage.last)}" value="Next" rerender="recordsection" action="{!nextPage}" /> &nbsp;&nbsp;
+                <apex:commandLink rendered="{!hasMorePagesAfter}" value=">" rerender="recordsection" action="{!updateActivePages}">
+                        <apex:param name="pnum" value="{!activePagesEndPNumber + 1}" assignto="{!pnum}" />
+                </apex:commandLink> &nbsp;&nbsp;           
+                <apex:commandLink rendered="{!NOT(activePage.last)}" value="Last" action="{!goToLast}" rerender="recordsection" />
+                <apex:outputpanel id="updateTaskNPPControl" >
+                    &nbsp;Tasks to display per page:&nbsp;
+                    <apex:selectList size="1" value="{!TasksPerPage}" >  
+                        <apex:selectOptions value="{!TasksPerPageSO}" />    
+                        <apex:actionSupport event="onchange" action="{!updateTasksPerPage}" status="updateTasksStatus" reRender="recordsection" />  
+                    </apex:selectList>              
+                </apex:outputpanel>  
+                <BR/>
+           </apex:outputPanel>  
+       </div> <!-- end myTasks -->
+      <apex:actionStatus id="updateTasksStatus" onstart="$('#myrecordsection').hide('fast')" onstop="$('#myrecordsection').show();window.scrollTo(0,0);" >
+              <apex:facet name="start"><apex:image value="{!$Resource.GatheringInfoImage}"/></apex:facet>
+      </apex:actionStatus>
+   
+   </apex:pageBlock>
+
+
+      <apex:commandButton value="Create New Task" oncomplete="$('#addTask').dialog('open')" />
+   </apex:form>
+
+      <div id="addTask" style="display: none" >  
+
+              <apex:outputpanel id="atd">  
+              
+                  <h2>New Task</h2>
+                                    
+                    <apex:form >
+                            <apex:panelGrid columns="2" width="85%">
+    
+                                 <apex:outputLabel value="Name"/><apex:inputText value="{!newTask.name}" size="21"   />
+                                 <apex:outputLabel value="Description"/><apex:inputField value="{!newTask.Description__c}" />
+                                 <apex:outputLabel value="Assign to"/>
+                                 <apex:inputField value="{!newTask.Assigned_To__c}" />
+
+                                 
+                                  <apex:commandButton action="{!addNewTask}" 
+                                               oncomplete="$('#addTask').dialog('close')" value="Create this Task" rerender="recordsection,msgs" /> 
+                                  <apex:commandButton value="Cancel" immediate="true" 
+                                               oncomplete="$('#addTask').dialog('close')"/>
+                             </apex:panelGrid>
+                   </apex:form>
+               
+               </apex:outputpanel> 
+
+       </div> <!-- addTask -->
+
+   
+
+</apex:page>

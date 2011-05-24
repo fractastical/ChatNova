@@ -1,0 +1,135 @@
+<apex:page >
+    <apex:stylesheet value="{!URLFOR( $Resource.chatterComboPack, 'styles.css' )}" />
+    
+    <apex:sectionheader title="About Chatter Combo Pack v1.87" />
+    
+    <apex:pageblock >
+        <p>The Chatter Combo Pack is a package of</p>
+            <ul>
+                <li><span class="bigFont">5</span> tabbed Chatter apps</li>
+                <li><span class="bigFont">4</span> Chatter apps for your sidebar</li>
+                <li><span class="bigFont">2</span> visualforce components that you can use to build your own Chatter apps</li>
+                <li><span class="bigFont">1</span> savory About page</li>
+            </ul>
+            
+        <p>Brought to you by
+            <a href="mailto:jhersh@salesforce.com">Jonathan Hersh</a>. Grab the latest version on the Appexchange:<br/>
+            <ul>
+                <li><a href="https://sites.secure.force.com/appexchange/listingDetail?listingId=a0N30000003HStjEAG">Chatter Combo Pack</a> [Aloha] (What's an <a href="http://sites.force.com/appexchange/results?type=Apps&filter=9&sort=6">Aloha App</a>?)</li>
+                <li><a href="https://sites.secure.force.com/appexchange/listingDetail?listingId=a0N30000003GL36EAG">Chatter Combo Pack</a> [Standard]</li>
+            </ul>
+        </p>
+    </apex:pageblock>
+    <apex:pageblock title="Tabbed Apps">
+        <a id="apps"></a>
+        
+            <div class="appBlock">
+                <a href="{!$Page.chatterSearch}"><apex:image value="{!URLFOR( $Resource.chatterComboPack, 'search.png' )}" height="149" width="220" />
+                <div class="txt">
+                <p class="title">Chatter Search</p></a>
+                <p class="body">A robust search engine for Chatter! Filter status updates by number of comments, file names, link URLs, post time, and more.</p>
+                </div>
+            </div>
+            
+            <div class="appBlock">
+                <a href="{!$Page.chatterConnector}"><apex:image value="{!URLFOR( $Resource.chatterComboPack, 'connector.png' )}" height="108" width="264" />
+                <div class="txt">
+                <p class="title">Chatter Connector</p></a>
+                <p class="body">The easiest, fastest, most fun way to discover and follow entire groups of people - your team, reporting hierarchy, direct reports, etc -- with one click.</p>
+                </div>
+            </div>
+            
+            <div class="appBlock">
+                <a href="{!$Page.chatterMessages}"><apex:image value="{!URLFOR( $Resource.chatterComboPack, 'messages.png' )}" height="175" width="243" />
+                <div class="txt">
+                <p class="title">Chatter Messages</p></a>
+                <p class="body">Private, secure, one-to-many, rich-text messaging with support for inline images.</p>
+                </div>
+            </div>
+            
+            <div class="appBlock">
+                <a href="{!$Page.chatterDashboard}"><apex:image value="{!URLFOR( $Resource.chatterComboPack, 'dashboard.png' )}" height="107" width="218" />
+                <div class="txt">
+                <p class="title">Chatter Dashboard</p></a>
+                <p class="body">A page of useful statistics about Chatter users and Chatter-enabled accounts, cases, and opportunities.</p>
+                </div>
+            </div>
+            
+            <div class="appBlock">
+                <a href="{!$Page.chatterDirectory}"><apex:image value="{!URLFOR( $Resource.chatterComboPack, 'directory2.png' )}" height="201" width="165" />
+                <div class="txt">
+                <p class="title">Chatter Directory</p></a>
+                <p class="body">A dynamic, elegant, browsable, filterable, sortable, searchable directory of Chatter Users and Chatter-enabled Accounts, Cases, and Opportunities. A complete replacement for Chatter's "People" tab.</p>
+                </div>
+            </div>
+            
+            
+            <div style="clear:both"></div>
+    </apex:pageblock>
+    <apex:pageblock title="Sidebar Apps">
+        <a id="sidebar"></a>
+        
+            <div class="appBlock">
+                <apex:image value="{!URLFOR( $Resource.chatterComboPack, 'minifeed.png' )}" height="324" width="209" />
+                <div class="txt">
+                <p class="title">Chatter Minifeed</p>
+                <p class="body">Your home page news feed, simplified and optimized for the sidebar. Never miss an update again! Also includes 
+                message notifications from <a href="#apps">Chatter Messages</a>. Auto-refreshes every 20 seconds.</p>
+                </div>
+            </div>
+        
+            <div class="appBlock">
+                <apex:image value="{!URLFOR( $Resource.chatterComboPack, 'sidebarprofile.png' )}" height="92" width="210" />
+                <div class="txt">
+                <p class="title">Chatter Sidebar Profile</p>
+                <p class="body">A mini Chatter profile for your sidebar. One-click access to your profile,
+                    follower and following lists, and your update count from anywhere!</p>
+                </div>
+            </div>
+            
+            <div class="appBlock">
+                <apex:image value="{!URLFOR( $Resource.chatterComboPack, 'notifications.png' )}" height="152" width="209" />
+                <div class="txt">
+                <p class="title">Chatter Notifications</p>
+                <p class="body">Find out who's posting what on your profile, commenting on your posts anywhere, and sending you Chatter Messages. Auto-refreshes every 20 seconds. You're always up to date!</p>
+                </div>
+            </div>
+            
+            <div class="appBlock">
+                <apex:image value="{!URLFOR( $Resource.chatterComboPack, 'directory.png' )}" height="78" width="208" />
+                <div class="txt">
+                <p class="title">Chatter Directory Search</p>
+                <p class="body">A sidebar search box to search the <a href="#apps">Chatter Directory</a> from anywhere.</p>
+                </div>
+            </div>
+            <div style="clear:both"></div>
+        <p>Trust me, they're really neat. Add <strong>all four</strong> to the <a href="/02T?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DHome&setupid=HomePageLayouts">home page layout(s)</a> of your choice.</p>
+    </apex:pageblock>
+    <apex:pageblock title="VisualForce Components">
+        <a id="components"></a>
+        
+            <div class="appBlock">
+                <apex:image value="{!URLFOR( $Resource.chatterComboPack, 'follow.png' )}" height="165" width="109" />
+                <div class="txt">
+                <p class="title">Chatter Follow Object</p>
+                <p class="body">Provide a user or object ID, and this component generates a dynamic, clickable AJAX-y
+                    follow/unfollow toggle just like the ones on your profile, follower/following lists, or record pages. Great for tables!
+                    See it in action on the <strong>Chatter Directory</strong>.<br/><br/>
+                    <code><apex:outputtext value="&lt;c:followObject" escape="false" /> oid="user/object ID" /&gt;</code></p>
+                </div>
+            </div>
+            
+            <div class="appBlock">
+                <apex:image value="{!URLFOR( $Resource.chatterComboPack, 'tooltip.png' )}" height="111" width="316" />
+                <div class="txt">
+                <p class="title">Chatter Profile Tooltip</p>
+                <p class="body">Specify a user ID and this component generates a link to that user's Chatter profile. When you
+                    hover your mouse over the link, a tooltip pops up with that user's Chatter profile picture, following and follower
+                    counts, and most recent status update. See it in action on <strong>Chatter Messages</strong>.<br/><br/>
+                    <code><apex:outputtext value="&lt;c:chatterTooltip" escape="false" /> uid="user ID" /&gt;</code></p>
+                </div>
+            </div>
+
+        <div style="clear:both"></div>
+    </apex:pageblock>
+</apex:page>
